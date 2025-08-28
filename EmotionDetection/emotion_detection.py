@@ -8,15 +8,24 @@ def emotion_detecter(text_to_analyze):
     headers = {"grpc-metadata-mm-model-id": "emotion_aggregated-workflow_lang_en_stock"}
     json_obj = { "raw_document": { "text": text_to_analyze } }
     # URL, headers, and the input json format required to accesses the Emotion Predict function from the Watson NLP Lib
-    
+
+    if not text_to_analyze:
+        # Will return Invalid Input if the input is left blank
+        return {'anger' : None,
+        'disgust' : None,
+        'fear' : None,
+        'joy' : None,
+        'sadness' : None,
+        'dominant_emotion' : None}
+
     # Send a post request using the above inputs
     response = requests.post(url, json = json_obj, headers = headers)
     
     formatted_response = json.loads(response.text)
-    # Format the resonse into a parsable json object
+    # Format the resonse into a parsable json object 
 
     # Return values as none if the server recieves a 500 error caused by invalid text
-    if response.status_code == 500:
+    if response.status_code == 500 or response.status_code == 400:
         anger_score = None
         disgust_score = None
         fear_score = None
@@ -37,7 +46,6 @@ def emotion_detecter(text_to_analyze):
             if formatted_response['emotionPredictions'][0]['emotion'][val] >= base_score:
                 dominant_emotion = val
                 base_score = formatted_response['emotionPredictions'][0]['emotion'][val]
-        #dominant_emotion = max(formatted_response['emotionPredictions'][0]['emotion'])
 
     return {
 'anger': anger_score,
